@@ -1,10 +1,7 @@
-import { createElement, createTextElement, render } from './lib/react';
+import React from './lib/react';
+import ReactDOM from './lib/react-dom';
 
-/**
- * React text element
- */
-const textEl = createTextElement('Hello World');
-const htmlEl = createElement('h1', undefined, textEl);
+const htmlEl = <h1>Hello World</h1>;
 
 const container = document.getElementById('⚛️');
-render(htmlEl, container);
+ReactDOM.render(htmlEl, container);
