@@ -1,4 +1,9 @@
-const render = (element, container) => {
+export const render = (component, container) => {
+  let element = component;
+  if (typeof element.type === 'function') {
+    element = element.type(element.props);
+  }
+
   const dom =
     element.type === 'TEXT_ELEMENT'
       ? document.createTextNode('')

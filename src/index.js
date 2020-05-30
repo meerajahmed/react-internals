@@ -1,7 +1,6 @@
 import React from './lib/react';
-import ReactDOM from './lib/react-dom';
-
-const htmlEl = <h1>Hello World</h1>;
+import { render } from './lib/react-dom';
+import App from './components/App';
 
 const container = document.getElementById('⚛️');
-ReactDOM.render(htmlEl, container);
+render(<App />, container);
