@@ -30,3 +30,15 @@ export const createTextElement = (text) => {
     },
   };
 };
+
+export const createElement = (type, props, ...children) => {
+  return {
+    type,
+    props: {
+      ...props,
+      children: children.map(
+        (child) => (typeof child === 'object' ? child : createTextElement(child)) // if child is text element
+      ),
+    },
+  };
+};
