@@ -1,0 +1,83 @@
+{
+  "name": "react-internals",
+  "version": "1.0.0",
+  "description": "React internals",
+  "main": "index.js",
+  "scripts": {
+    "dev": "webpack-dev-server --env.mode=development --open",
+    "prod": "webpack-dev-server --env.mode=production --open",
+    "build": "webpack",
+    "build:dev": "npm run build -- --env.mode=development",
+    "build:prod": "npm run build -- --env.mode=production",
+    "prebuild": "npm run clean",
+    "clean": "rimraf dist",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage --colors",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "nuke:cache": "rimraf ./node_modules/.cache"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/meerajahmed/react-internals.git"
+  },
+  "keywords": [
+    "react",
+    "internals"
+  ],
+  "author": "Meeraj Ahmed",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/meerajahmed/react-internals/issues"
+  },
+  "homepage": "https://github.com/meerajahmed/react-internals#readme",
+  "dependencies": {
+    "@babel/runtime": "7.9.6",
+    "core-js": "3.6.5",
+    "dotenv-webpack": "1.7.0",
+    "lodash": "4.17.15",
+    "prop-types": "15.7.2",
+    "react": "16.13.1",
+    "react-dom": "16.13.1",
+    "react-router-dom": "5.1.2",
+    "uuid": "8.0.0",
+    "webpack": "4.43.0"
+  },
+  "devDependencies": {
+    "@babel/core": "7.9.6",
+    "@babel/plugin-proposal-class-properties": "7.8.3",
+    "@babel/plugin-transform-modules-commonjs": "7.9.6",
+    "@babel/plugin-transform-runtime": "7.9.6",
+    "@babel/preset-env": "7.9.6",
+    "@babel/preset-react": "7.9.4",
+    "babel-eslint": "10.1.0",
+    "babel-jest": "26.0.1",
+    "babel-loader": "8.1.0",
+    "concurrently": "5.2.0",
+    "enzyme": "3.11.0",
+    "enzyme-adapter-react-16": "1.15.2",
+    "eslint": "6.8.0",
+    "eslint-config-airbnb": "18.1.0",
+    "eslint-config-jest-enzyme": "7.1.2",
+    "eslint-config-prettier": "6.11.0",
+    "eslint-loader": "4.0.2",
+    "eslint-plugin-import": "2.20.2",
+    "eslint-plugin-jest": "23.10.0",
+    "eslint-plugin-jsx-a11y": "6.2.3",
+    "eslint-plugin-prettier": "3.1.3",
+    "eslint-plugin-react": "7.19.0",
+    "eslint-plugin-react-hooks": "2.5.1",
+    "eslint-plugin-you-dont-need-lodash-underscore": "6.10.0",
+    "html-webpack-plugin": "4.3.0",
+    "husky": "4.2.5",
+    "jest": "26.0.1",
+    "lint-staged": "10.2.2",
+    "prettier": "2.0.5",
+    "rimraf": "3.0.2",
+    "typescript": "3.8.3",
+    "webpack-cli": "3.3.11",
+    "webpack-dev-server": "3.11.0",
+    "webpack-merge": "4.2.2"
+  }
+}

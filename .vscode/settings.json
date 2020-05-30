@@ -1,0 +1,6 @@
+{
+  "files.eol": "\n",
+  "prettier.requireConfig": true,
+  "editor.formatOnSave": true,
+  "cSpell.words": ["corejs"]
+}
