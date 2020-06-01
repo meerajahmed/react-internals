@@ -61,6 +61,18 @@ const createDom = (fiber) => {
   return dom;
 };
 
+const commitDeletion = (fiber, domParent) => {
+  if (fiber.dom) {
+    domParent.removeChild(fiber.dom);
+  } else {
+    /*
+     * Function component - 2. when removing a node we also need to keep going until
+     *  we find a child with a DOM node
+     * */
+    commitDeletion(fiber.child, domParent);
+  }
+};
+
 /*
  * @param elements we want to reconcile
  * */
@@ -143,10 +155,13 @@ const reconcileChildren = (wipFiber, elements) => {
   }
 };
 
-/*
- * @param fiber - unit of work. one fiber for each react element
- * */
-const performUnitOfWork = (fiber) => {
+const updateFunctionComponent = (fiber) => {
+  // children come from running the function instead of getting them directly from the props
+  const children = [fiber.type(fiber.props)];
+  reconcileChildren(fiber, children);
+};
+
+const updateHostComponent = (fiber) => {
   /*
    * 1. add the element to the DOM
    * 2. create the fibers for the element’s children
@@ -159,23 +174,35 @@ const performUnitOfWork = (fiber) => {
     fiber.dom = createDom(fiber);
   }
 
-  if (fiber.parent) {
-    /*
+  /*  if (fiber.parent) {
+    /!*
      * Problem: We are adding a new node to the DOM each time we work on an element.
      * The browser could interrupt our work before we finish rendering the whole tree.
      * In that case, the user will see an incomplete UI. And we don’t want that.
-     * */
+     * *!/
     fiber.parent.dom.appendChild(fiber.dom);
-    /*
+    /!*
      * Solution: remove the part that mutates the DOM from here
      * Instead keep track of the root of the fiber tree - wipRoot
-     * */
-  }
+     * *!/
+  } */
 
   // 2. create new fiber for each child
   const elements = fiber.props.children;
 
   reconcileChildren(fiber, elements);
+};
+
+/*
+ * @param fiber - unit of work. one fiber for each react element
+ * */
+const performUnitOfWork = (fiber) => {
+  const isFunctionComponent = fiber.type instanceof Function;
+  if (isFunctionComponent) {
+    updateFunctionComponent(fiber);
+  } else {
+    updateHostComponent(fiber);
+  }
 
   /*
    * Finally we search for the next unit of work. We first try with the child, then with the sibling,
@@ -198,13 +225,27 @@ const commitWork = (fiber) => {
   if (!fiber) {
     return;
   }
-  const domParent = fiber.parent.dom;
+  /*
+   * The fiber from a function component doesn’t have a DOM node
+   * */
+
+  let domParentFiber = fiber.parent;
+  /*
+   * Function component:  1. to find the parent of a DOM node we’ll need to go up the fiber tree until
+   * we find a fiber with a DOM node
+   * */
+  while (!domParentFiber.dom) {
+    domParentFiber = domParentFiber.parent;
+  }
+
+  // const domParent = fiber.parent.dom;
+  const domParent = domParentFiber.dom;
   if (fiber.effectTag === 'PLACEMENT' && fiber.dom != null) {
     domParent.appendChild(fiber.dom);
   } else if (fiber.effectTag === 'UPDATE' && fiber.dom != null) {
     updateDom(fiber.dom, fiber.alternate.props, fiber.props);
   } else if (fiber.effectTag === 'DELETION') {
-    domParent.removeChild(fiber.dom);
+    commitDeletion(fiber, domParent);
   }
 
   // recursively append all the nodes to the dom
