@@ -1,6 +1,7 @@
 import React from './lib/react';
 import { render } from './lib/react-dom';
-import App from './components/App';
+import Counter from './components/Counter';
 
 const container = document.getElementById('⚛️');
-render(<App />, container);
+
+render(<Counter />, container);

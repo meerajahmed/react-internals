@@ -2,6 +2,8 @@ let wipRoot = null;
 let nextUnitOfWork = null;
 let currentRoot = null;
 let deletions = null;
+let wipFiber = null;
+let hookIndex = null;
 
 const isEvent = (key) => key.startsWith('on');
 
@@ -76,9 +78,10 @@ const commitDeletion = (fiber, domParent) => {
 /*
  * @param elements we want to reconcile
  * */
-const reconcileChildren = (wipFiber, elements) => {
+
+const reconcileChildren = (_wipFiber, elements) => {
   let index = 0;
-  const oldFiber = wipFiber.alternate && wipFiber.alternate.child;
+  let oldFiber = _wipFiber.alternate && _wipFiber.alternate.child;
   let prevSibling = null;
 
   /*
@@ -109,7 +112,7 @@ const reconcileChildren = (wipFiber, elements) => {
         type: oldFiber.type,
         props: element.props,
         dom: oldFiber.dom,
-        parent: wipFiber,
+        parent: _wipFiber,
         alternate: oldFiber,
         effectTag: 'UPDATE',
       };
@@ -124,7 +127,7 @@ const reconcileChildren = (wipFiber, elements) => {
         type: element.type,
         props: element.props,
         dom: null,
-        parent: wipFiber,
+        parent: _wipFiber,
         alternate: null,
         effectTag: 'PLACEMENT',
       };
@@ -139,6 +142,10 @@ const reconcileChildren = (wipFiber, elements) => {
       deletions.push(oldFiber);
     }
 
+    if (oldFiber) {
+      oldFiber = oldFiber.sibling;
+    }
+
     /*
      * And we add it to the fiber tree setting it either as a child or as a sibling,
      * depending on whether it’s the first child or not.
@@ -146,8 +153,8 @@ const reconcileChildren = (wipFiber, elements) => {
 
     if (index === 0) {
       // eslint-disable-next-line no-param-reassign
-      wipFiber.child = newFiber;
-    } else {
+      _wipFiber.child = newFiber;
+    } else if (element) {
       prevSibling.sibling = newFiber;
     }
     prevSibling = newFiber;
@@ -156,6 +163,9 @@ const reconcileChildren = (wipFiber, elements) => {
 };
 
 const updateFunctionComponent = (fiber) => {
+  wipFiber = fiber;
+  hookIndex = 0;
+  wipFiber.hooks = [];
   // children come from running the function instead of getting them directly from the props
   const children = [fiber.type(fiber.props)];
   reconcileChildren(fiber, children);
@@ -290,6 +300,45 @@ const workLoop = (deadline) => {
  * */
 window.requestIdleCallback(workLoop);
 
+export const useState = (initial) => {
+  /*
+   * If we have an old hook, we copy the state from the old hook to the new hook,
+   * if we don’t we initialize the state
+   * */
+  const oldHook =
+    wipFiber.alternate && wipFiber.alternate.hooks && wipFiber.alternate.hooks[hookIndex];
+
+  const hook = {
+    state: oldHook ? oldHook.state : initial,
+    queue: [],
+  };
+
+  // we run actions the next time we are rendering the component
+  const actions = oldHook ? oldHook.queue : [];
+  // eslint-disable-next-line no-return-assign
+  actions.forEach((action) => (hook.state = action(hook.state)));
+
+  // function to update the state
+  const setState = (action) => {
+    hook.queue.push(action);
+    wipRoot = {
+      dom: currentRoot.dom,
+      props: currentRoot.props,
+      alternate: currentRoot,
+    };
+    /*
+     * set a new work in progress root as the next unit of work so the work loop can start a new render phase
+     * */
+    nextUnitOfWork = wipRoot;
+    deletions = [];
+  };
+
+  // add the new hook to the fiber, increment the hook index by one, and return the state
+  wipFiber.hooks.push(hook);
+  hookIndex += 1;
+  return [hook.state, setState];
+};
+
 export const render = (element, container) => {
   wipRoot = {
     // type: string | function
@@ -367,6 +416,7 @@ const ReactDOM = {
   render,
   performUnitOfWork,
   commitWork,
+  useState,
 };
 
 export default ReactDOM;
